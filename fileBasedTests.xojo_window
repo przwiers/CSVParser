@@ -27,7 +27,6 @@ Begin Window fileBasedTests
    Visible         =   True
    Width           =   633
    Begin CSVParser CSVParser1
-      Enabled         =   True
       fieldenclosure  =   """"""
       fieldseparator  =   ","
       FieldsEscapedBy =   ""
@@ -82,7 +81,7 @@ Begin Window fileBasedTests
       DataSource      =   ""
       Enabled         =   True
       Format          =   ""
-      Height          =   221
+      Height          =   248
       HelpTag         =   ""
       HideSelection   =   True
       Index           =   -2147483648
@@ -112,7 +111,7 @@ Begin Window fileBasedTests
       TextFont        =   "System"
       TextSize        =   12.0
       TextUnit        =   0
-      Top             =   194
+      Top             =   167
       Transparent     =   True
       Underline       =   False
       UnicodeMode     =   0
@@ -184,38 +183,6 @@ Begin Window fileBasedTests
       Visible         =   True
       Width           =   155
    End
-   Begin PushButton pbUseTabs
-      AutoDeactivate  =   True
-      Bold            =   False
-      ButtonStyle     =   0
-      Cancel          =   False
-      Caption         =   "tabbed"
-      Default         =   False
-      Enabled         =   True
-      Height          =   20
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Italic          =   False
-      Left            =   20
-      LockBottom      =   False
-      LockedInPosition=   False
-      LockLeft        =   False
-      LockRight       =   False
-      LockTop         =   False
-      Scope           =   0
-      TabIndex        =   5
-      TabPanelIndex   =   0
-      TabStop         =   True
-      TextFont        =   "System"
-      TextSize        =   12.0
-      TextUnit        =   0
-      Top             =   46
-      Transparent     =   True
-      Underline       =   False
-      Visible         =   True
-      Width           =   148
-   End
    Begin CheckBox chkFirstLineIsHeader
       AutoDeactivate  =   True
       Bold            =   False
@@ -242,56 +209,47 @@ Begin Window fileBasedTests
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   78
+      Top             =   46
       Transparent     =   True
       Underline       =   False
       Value           =   False
       Visible         =   True
       Width           =   213
    End
-   Begin TextField txtEscapeChar
-      AcceptTabs      =   False
-      Alignment       =   0
+   Begin ComboBox cbxEscapeChar
+      AutoComplete    =   False
       AutoDeactivate  =   True
-      AutomaticallyCheckSpelling=   False
-      BackColor       =   &cFFFFFF00
       Bold            =   False
-      Border          =   True
       CueText         =   ""
       DataField       =   ""
       DataSource      =   ""
       Enabled         =   True
-      Format          =   ""
       Height          =   22
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
+      InitialValue    =   ",\n\\t (tab)"
       Italic          =   False
-      Left            =   180
-      LimitText       =   0
+      Left            =   158
+      ListIndex       =   0
       LockBottom      =   False
       LockedInPosition=   False
       LockLeft        =   False
       LockRight       =   False
       LockTop         =   False
-      Mask            =   "&"
-      Password        =   False
-      ReadOnly        =   False
       Scope           =   0
       TabIndex        =   7
       TabPanelIndex   =   0
       TabStop         =   True
-      Text            =   ""
-      TextColor       =   &c00000000
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   109
+      Top             =   74
       Transparent     =   True
       Underline       =   False
       UseFocusRing    =   True
       Visible         =   True
-      Width           =   45
+      Width           =   101
    End
    Begin Label StaticText1
       AutoDeactivate  =   True
@@ -304,7 +262,7 @@ Begin Window fileBasedTests
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   False
-      Left            =   33
+      Left            =   20
       LockBottom      =   False
       LockedInPosition=   False
       LockLeft        =   False
@@ -316,17 +274,17 @@ Begin Window fileBasedTests
       TabIndex        =   8
       TabPanelIndex   =   0
       TabStop         =   True
-      Text            =   "Escape Character"
+      Text            =   "Field Separator"
       TextAlign       =   0
       TextColor       =   &c00000000
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   110
+      Top             =   75
       Transparent     =   False
       Underline       =   False
       Visible         =   True
-      Width           =   142
+      Width           =   133
    End
    Begin Label lblFileName
       AutoDeactivate  =   True
@@ -357,7 +315,7 @@ Begin Window fileBasedTests
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   143
+      Top             =   108
       Transparent     =   False
       Underline       =   False
       Visible         =   False
@@ -392,7 +350,7 @@ Begin Window fileBasedTests
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   170
+      Top             =   135
       Transparent     =   False
       Underline       =   False
       Visible         =   True
@@ -465,6 +423,14 @@ End
 		  lblFileName.Visible = True
 		  
 		  CSVParser1.treatFirstLineAsHeaders = chkFirstLineIsHeader.Value
+		  Select Case cbxEscapeChar.Text
+		  Case ","
+		    CSVParser1.fieldseparator = cbxEscapeChar.Text
+		  Case "\t (tab)"
+		    CSVParser1.fieldseparator = &u09
+		  Else
+		    CSVParser1.fieldseparator = cbxEscapeChar.Text
+		  End Select
 		  
 		  Dim d As New Date
 		  txtResults.AddText "Start " + d.SQLDateTime + EndOfLine
@@ -499,7 +465,17 @@ End
 		  Dim d As New Date
 		  txtResults.AddText "Start " + d.SQLDateTime + EndOfLine
 		  
-		  csvRecords = New CSVRecordSet(inputFile)
+		  Dim fieldSep As String
+		  Select Case cbxEscapeChar.Text
+		  Case ","
+		    fieldSep = cbxEscapeChar.Text
+		  Case "\t (tab)"
+		    fieldSep = &u09
+		  Else
+		    fieldSep = cbxEscapeChar.Text
+		  End Select
+		  
+		  csvRecords = New CSVRecordSet(inputFile, fieldSep)
 		  
 		  While csvRecords.EOF <> True
 		    rowRead = ""
@@ -588,41 +564,6 @@ End
 		  
 		  dbField = csvRecords.idxField(i+1)
 		  dbField = csvRecords.idxField(0)
-		  
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events pbUseTabs
-	#tag Event
-		Sub Action()
-		  
-		  Dim inputFile As FolderItem
-		  
-		  inputFile = GetOpenFolderItem("special/any")
-		  
-		  txtResults.Text = ""
-		  
-		  If inputFile Is Nil Then 
-		    lblFileName.Visible = false
-		    Return
-		  End If
-		  
-		  lblFileName.Text = inputFile.NativePath
-		  lblFileName.Visible = True
-		  
-		  CSVParser1.fieldseparator = Chr(9)
-		  
-		  CSVParser1.treatFirstLineAsHeaders = chkFirstLineIsHeader.Value
-		  
-		  csvParser1.parse(inputFile)
-		  
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events txtEscapeChar
-	#tag Event
-		Sub TextChange()
-		  CSVParser1.FieldsEscapedBy = me.text
 		  
 		End Sub
 	#tag EndEvent

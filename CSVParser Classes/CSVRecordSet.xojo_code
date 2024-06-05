@@ -23,10 +23,11 @@ Protected Class CSVRecordSet
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Constructor(f as folderItem)
+		Sub Constructor(f as folderItem, fieldseparator as string = ",")
 		  If Not (f Is Nil) Then
 		    myFile = f
-		    'inputFile = BinaryStream.Open(myFile, false)
+		    mFieldSeparator = fieldseparator
+		    
 		    InputFile = BufferedBinaryInputStream.Open(myFile, False)
 		    
 		    MoveNext
@@ -36,9 +37,9 @@ Protected Class CSVRecordSet
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Constructor(inputCSVString as string)
+		Sub Constructor(inputCSVString as string, fieldseparator as string = ",")
+		  mFieldSeparator = fieldseparator
 		  
-		  'inputFile = BinaryStream.Open(myFile, false)
 		  InputFile = BufferedBinaryInputStream.Open(inputCSVString, False)
 		  
 		  MoveNext
@@ -119,7 +120,7 @@ Protected Class CSVRecordSet
 
 	#tag Method, Flags = &h0
 		Sub MoveNext()
-		  dim c as integer
+		  Dim c As Integer
 		  
 		  redim currentRow(-1)
 		  fieldBuffer = ""
@@ -134,13 +135,11 @@ Protected Class CSVRecordSet
 		    
 		    c = inputFile.ReadUInt8
 		    
-		    select case state
-		    case start_field
-		      //if fieldCount = 1 then
-		      //line = line + 1
-		      //end if
+		    Select Case state
 		      
-		      if c = ascB(",") then // got a comma when we were expecting to start a field so we just got an empty field
+		    Case start_field
+		      
+		      If c = AscB(mFieldSeparator) Then // got a fieldseparator (comma normally) when we were expecting to start a field so we just got an empty field
 		        //                                   like ,, (the field between the comma's is empty)
 		        newfield (fieldBuffer)
 		        fieldCount = fieldCount + 1
@@ -177,7 +176,7 @@ Protected Class CSVRecordSet
 		    case collect_chars
 		      if c = ascB("""") then // a quote in an unquoted field .. that's an error
 		        state = error
-		      elseif c = ascB(",") or c = 10 or c = 13 then // a comma CR or LF (cant have CR, LF or CRLF in an unquoted field
+		      ElseIf c = AscB(mFieldSeparator) Or c = 10 Or c = 13 Then // a comma CR or LF (cant have CR, LF or CRLF in an unquoted field
 		        newfield (fieldBuffer)
 		        fieldBuffer = ""
 		        
@@ -216,7 +215,7 @@ Protected Class CSVRecordSet
 		      
 		      c = inputFile.ReadUInt8 // skip forward til we find the start of a new field or the end of line
 		      while inputFile.eof <> true
-		        if c = 13 or c = 10 or c = ascB(",") then exit
+		        If c = 13 Or c = 10 Or c = AscB(mFieldSeparator) Then Exit
 		        c = inputFile.ReadUInt8
 		      wend
 		      if c = 13 then // found a CR
@@ -239,7 +238,7 @@ Protected Class CSVRecordSet
 		      if c = ascB("""") then // we've already had one quote did we get a second ie "" ?
 		        fieldBuffer = fieldBuffer + chrB(c) // add it to the buffer
 		        state = quoted_field // yup ... add the second one and go back tp collecting characters in a quoted field
-		      elseif c = ascB(",") or c = 10 or c = 13 then // we got a , CR or LF (folloiwing a ")
+		      ElseIf c = AscB(mFieldSeparator) Or c = 10 Or c = 13 Then // we got a , CR or LF (folloiwing a ")
 		        
 		        newfield (fieldBuffer)
 		        fieldBuffer = ""
@@ -316,47 +315,51 @@ Protected Class CSVRecordSet
 	#tag EndMethod
 
 
-	#tag Property, Flags = &h1
-		Protected currentRow() As string
+	#tag Property, Flags = &h21
+		Private currentRow() As string
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected fieldBuffer As string
+	#tag Property, Flags = &h21
+		Private fieldBuffer As string
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected fieldCount As integer
+	#tag Property, Flags = &h21
+		Private fieldCount As integer
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected InputFile As BufferedBinaryInputStream
+	#tag Property, Flags = &h21
+		Private InputFile As BufferedBinaryInputStream
 	#tag EndProperty
 
-	#tag Property, Flags = &h0
-		myFile As folderItem
+	#tag Property, Flags = &h21
+		Private mFieldSeparator As string = ""","""
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected state As integer
+	#tag Property, Flags = &h21
+		Private myFile As folderItem
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private state As integer
 	#tag EndProperty
 
 
-	#tag Constant, Name = collect_chars, Type = Double, Dynamic = False, Default = \"2", Scope = Protected
+	#tag Constant, Name = collect_chars, Type = Double, Dynamic = False, Default = \"2", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = end_field, Type = Double, Dynamic = False, Default = \"3", Scope = Protected
+	#tag Constant, Name = end_field, Type = Double, Dynamic = False, Default = \"3", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = error, Type = Double, Dynamic = False, Default = \"4", Scope = Protected
+	#tag Constant, Name = error, Type = Double, Dynamic = False, Default = \"4", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = quoted_field, Type = Double, Dynamic = False, Default = \"5", Scope = Protected
+	#tag Constant, Name = quoted_field, Type = Double, Dynamic = False, Default = \"5", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = quote_in_quoted_field, Type = Double, Dynamic = False, Default = \"6", Scope = Protected
+	#tag Constant, Name = quote_in_quoted_field, Type = Double, Dynamic = False, Default = \"6", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = start_field, Type = Double, Dynamic = False, Default = \"1", Scope = Protected
+	#tag Constant, Name = start_field, Type = Double, Dynamic = False, Default = \"1", Scope = Private
 	#tag EndConstant
 
 
